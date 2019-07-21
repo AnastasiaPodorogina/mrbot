@@ -20,5 +20,3 @@ class TestRegister(TestCase):
         data_dict = {"username": "", "password": "1234"}
         response = self.client.post(url, json.dumps(data_dict), content_type="application/json")
         self.assertEqual(response.status_code, 201)
-
-    def
