@@ -15,12 +15,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from korgi.views import registration, login_view, logout_view, count_view
+from korgi.views import RegistrationView, LoginView, LogoutView, CountView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('registration/', registration, name='registration'),
-    path('login/', login_view, name='login'),
-    path('logout/', logout_view, name='logout'),
-    path('count/', count_view, name='count')
+    path('registration/', RegistrationView.as_view(), name='registration'),
+    path('login/', LoginView.as_view(), name='login'),
+    path('logout/', LogoutView.as_view(), name='logout'),
+    path('count/', CountView.as_view(), name='count')
 ]

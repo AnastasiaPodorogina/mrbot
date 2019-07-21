@@ -1,16 +1,19 @@
-from django.contrib.auth import login, logout
-from django.core.exceptions import ObjectDoesNotExist
-from django.http import HttpResponse, HttpRequest
-from django.views.decorators.csrf import csrf_exempt
 import json
 
+from django.contrib.auth import login, logout
+from django.core.exceptions import ObjectDoesNotExist
+from django.http import HttpResponse
+from django.views import View
+
 from .models import CustomUser
+
+
 # Create your views here.
 
 
-@csrf_exempt
-def registration(request):
-    if request.method == 'POST':
+class RegistrationView(View):
+
+    def post(self, request):
         try:
             data = json.loads(request.body)
             username = data['username']
@@ -25,10 +28,12 @@ def registration(request):
             HttpResponse('expected fields "username", "password"')
 
 
-@csrf_exempt
-def login_view(request):
-    if not request.user.is_authenticated:
-        if request.method == 'POST':
+
+class LoginView(View):
+
+    def post(self, request):
+        if not request.user.is_authenticated:
+
             data = json.loads(request.body)
             username = data['username']
             password = data['password']
@@ -42,35 +47,43 @@ def login_view(request):
                 return HttpResponse("You're logged in.")
             else:
                 return HttpResponse("Your username and password didn't match.", status=400)
-    else:
-        return HttpResponse('You are already logged in')
+        else:
+            return HttpResponse('You are already logged in')
 
 
-def logout_view(request):
-    try:
-        logout(request)
-    except KeyError:
-        pass
-    return HttpResponse("You're logged out.")
+class LogoutView(View):
+
+    def get(self, request):
+        try:
+            logout(request)
+        except KeyError:
+            pass
+        return HttpResponse("You're logged out.")
 
 
-@csrf_exempt
-def count_view(request):
-    if request.user.is_authenticated:
+class CountView(View):
+
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return HttpResponse('Permission denied. You have to login')
         username = request.user.get_username()
         user = CustomUser.objects.get(username=username)
+        return HttpResponse(f'For user {username} count = {user.count}')
 
-        if request.method == 'POST':
-            user.count += 1
-            user.save()
-            return HttpResponse(f'Count update {user.count} for {username}')
+    def post(self, request):
+        if not request.user.is_authenticated:
+            return HttpResponse('Permission denied. You have to login')
+        username = request.user.get_username()
+        user = CustomUser.objects.get(username=username)
+        user.count += 1
+        user.save()
+        return HttpResponse(f'Count update {user.count} for {username}')
 
-        if request.method == 'GET':
-            return HttpResponse(f'For user {username} count = {user.count}')
-
-        if request.method == 'DELETE':
-            user.count -= 1
-            user.save()
-            return HttpResponse(f'Count update {user.count} for {username}')
-    else:
-        return HttpResponse('Permission denied. You have to login')
+    def delete(self, request):
+        if not request.user.is_authenticated:
+            return HttpResponse('Permission denied. You have to login')
+        username = request.user.get_username()
+        user = CustomUser.objects.get(username=username)
+        user.count -= 1
+        user.save()
+        return HttpResponse(f'Count update {user.count} for {username}')
