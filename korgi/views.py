@@ -44,7 +44,7 @@ class LoginView(View):
 
             if user.check_password(password):
                 login(request, user)
-                return HttpResponse("You're logged in.")
+                return HttpResponse("You're logged in.", status=200)
             else:
                 return HttpResponse("Your username and password didn't match.", status=400)
         else:
